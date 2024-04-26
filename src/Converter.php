@@ -25,9 +25,13 @@ class Converter
         foreach ($files as $file) {
             $content = $file->getContents();
 
-            preg_match_all('/( *)\{(\{|!!)\s*Form::(\w+)\((.*)\)\s*(\}|!!)\}/Us', $content, $matches);
+            preg_match_all('/([ |\t]*)\{(\{|!!)\s*Form::(\w+)\((.*)\)\s*(\}|!!)\}/Us', $content, $matches);
 
             foreach (array_keys($matches[0]) as $i) {
+                if (strpos($matches[0][$i], '{{--') !== false || strpos($matches[0][$i], '--}}') !== false) {
+                    continue;
+                }
+
                 $result = null;
                 static::$hasComments = false;
                 static::$indent = $matches[1][$i];
@@ -55,7 +59,7 @@ class Converter
 
                     } elseif (in_array($formBuilderMethod, ['input', 'text', 'number', 'date', 'time', 'datetime', 'week', 'month', 'range', 'search', 'email', 'tel', 'url', 'color', 'hidden'])) {
                         if ($formBuilderMethod === 'input') {
-                            $formBuilderMethod = trim(array_shift($formBuilderArgs), ' "\'');
+                            $formBuilderMethod = trim(array_shift($formBuilderArgs), '\'"');
                         }
 
                         $result = static::buildDefaultInput(
@@ -155,7 +159,19 @@ class Converter
             unset($extractedOptions['url']);
 
         } elseif (isset($extractedOptions['route'])) {
-            $attributes['action'] = 'route('.trim($extractedOptions['route'], " \n[]").')';
+            $routeArgs = static::extractArgsFromString(trim($extractedOptions['route'], " \n\r\t\v\0[]"));
+            $route = array_shift($routeArgs);
+
+            $attributes['action'] = 'route('.$route;
+
+            if (count($routeArgs) === 1) {
+                $attributes['action'] .= ', '.$routeArgs[0];
+
+            } elseif (count($routeArgs) > 1) {
+                $attributes['action'] .= ', ['.implode(', ', $routeArgs).']';
+            }
+
+            $attributes['action'] .= ')';
 
             unset($extractedOptions['route']);
         }
@@ -208,7 +224,7 @@ class Converter
             $attributes['for'] = $for;
 
             if (static::isEmpty($value)) {
-                $value = "ucwords(str_replace('_', ' ', ".$for."))";
+                $value = "ucwords(str_replace('_', ' ', $for))";
             }
         }
 
@@ -420,15 +436,7 @@ class Converter
 
     protected static function canUseNameAsId(string $name): bool
     {
-        if (! static::isEmpty($name)) {
-            $name = trim($name, ' "\'');
-
-            if (preg_match('/^\w+$/', $name)) {
-                return true;
-            }
-        }
-
-        return false;
+        return ! static::isEmpty($name) && preg_match('/^\w+$/', trim($name, '\'"'));
     }
 
     protected static function isEmpty(string $value): bool
@@ -436,35 +444,34 @@ class Converter
         return empty($value) || in_array(strtolower($value), ["''", '""', 'false', 'null']);
     }
 
+    /**
+     * Examples:
+     *
+     * $value = "'Bonjour l\'ami'" + $escape = false|true
+     * return = "Bonjour l'ami"
+     *
+     * $value = "'Bonjour <strong>l\'ami'</strong>" + $escape = false
+     * return = "Bonjour <strong>l'ami</strong>"
+     *
+     * $value = "'Bonjour <strong>l\'ami'</strong>" + $escape = true
+     * return = "{!! e('Bonjour <strong>l\'ami</strong>', false) !!}"
+     *
+     * $value = "'Bonjour l\'ami '.$name" + $escape = false
+     * return = "{!! 'Bonjour l\'ami '.$name !!}"
+     *
+     * $value = "'Bonjour l\'ami '.$name" + $escape = true
+     * return = "{!! e('Bonjour l\'ami '.$name, false) !!}"
+     */
     protected static function withEchoIfNeeded(string $value, bool $escape): string
     {
-        $value = trim($value);
-
         if (static::isEmpty($value) || preg_match('/^\w+$/', $value)) {
             return $value;
         }
 
-        $isRegularString = false;
+        $unquotedValue = static::extractStringBetweenQuotes($value);
 
-        if (preg_match('/^\'(.*)\'$/Us', $value, $matches)
-            && strpos(str_replace("\\'", '', $matches[1]), "'") === false) {
-
-            $value = str_replace("\\'", "'", $matches[1]);
-            $isRegularString = true;
-
-        } elseif (preg_match('/^"([^\$]*)"$/Us', $value, $matches)
-            && strpos(str_replace('\\"', '', $matches[1]), '"') === false) {
-
-            $value = str_replace('\\"', '"', $matches[1]);
-            $isRegularString = true;
-        }
-
-        if ($isRegularString) {
-            if (! $escape || $value === strip_tags($value)) {
-                return $value;
-            }
-
-            $value = "'$value'";
+        if ($unquotedValue !== null && (! $escape || $unquotedValue === strip_tags($unquotedValue))) {
+            return $unquotedValue;
         }
 
         if ($escape) {
@@ -490,12 +497,10 @@ class Converter
             return $value;
         }
 
-        if (preg_match('/^\'([^\']*)\'$/Us', $name, $matches)
-            || preg_match('/^"([^"\$]*)"$/Us', $name, $matches)) {
-
+        if (static::extractStringBetweenQuotes($name) !== null) {
             $key = str_replace(['.', '[]', '[', ']'], ['_', '', '.', ''], $name);
         } else {
-            $key = "str_replace(['.', '[]', '[', ']'], ['_', '', '.', ''], ".$name.")";
+            $key = "str_replace(['.', '[]', '[', ']'], ['_', '', '.', ''], $name)";
         }
 
         return 'old('.$key.(! empty($value) ? ', '.$value : '').')';
@@ -504,6 +509,38 @@ class Converter
     protected static function useOldHelper(string $value): bool
     {
         return preg_match('/[^\w]old\(/', ' '.$value);
+    }
+
+    /**
+     * Examples:
+     *
+     * $string = "'test'"
+     * return = "test"
+     *
+     * $string = "'Bonjour l\'ami'"
+     * return = "Bonjour l'ami"
+     *
+     * $string = "'Bonjour l\'ami '.$name"
+     * return = null
+     *
+     * $string = "true"
+     * return = null
+     */
+    protected static function extractStringBetweenQuotes(string $string): ?string
+    {
+        if (preg_match('/^\'(.*)\'$/Us', $string, $matches)
+            && strpos(str_replace("\\'", '', $matches[1]), "'") === false) {
+
+            return str_replace("\\'", "'", $matches[1]);
+        }
+
+        if (preg_match('/^"([^\$]*)"$/Us', $string, $matches)
+            && strpos(str_replace('\\"', '', $matches[1]), '"') === false) {
+
+            return str_replace('\\"', '"', $matches[1]);
+        }
+
+        return null;
     }
 
     protected static function extractArrayFromStringWithCheckOptionsTagIfFailed(string $string): array
@@ -520,6 +557,16 @@ class Converter
         return $options;
     }
 
+    /**
+     * Example:
+     *
+     * $string = "['class' => 'form-control', 'disabled']"
+     *
+     * return = [
+     *     "class" => "'form-control'",
+     *     0 => "'disabled'",
+     * ]
+     */
     protected static function extractArrayFromString(string $string): array
     {
         $array = [];
@@ -556,6 +603,17 @@ class Converter
         return $array;
     }
 
+    /**
+     * Example:
+     *
+     * $string = "'champ', $value, ['class' => 'form-control', 'disabled']"
+     *
+     * return = [
+     *     "'champ'",
+     *     "$value",
+     *     "['class' => 'form-control', 'disabled']",
+     * ]
+     */
     protected static function extractArgsFromString(string $string): array
     {
         $args = [];
@@ -632,7 +690,7 @@ class Converter
                 && ! $inSimpleQuotedString && ! $inDoubleQuotedString
                 && $nbUnclosedParenthesis === 0 && $nbUnclosedBrackets === 0) {
 
-                $args[$argIndex] = trim($args[$argIndex], " \n");
+                $args[$argIndex] = trim($args[$argIndex]);
                 $argIndex++;
             }
         }
