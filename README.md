@@ -22,24 +22,24 @@ composer require axn/laravelcollective-form-to-raw-html --dev
 Usage
 -----
 
-Simply launch this command:
+Simply run this command:
 
-```php
-laravelcollective-form-to-raw-html:run
+```sh
+php artisan laravelcollective-form-to-raw-html:run
 ```
 
 By default, the command scans all files in `resources/views/`.
 
 You can precise an other directory:
 
-```php
-laravelcollective-form-to-raw-html:run resources/views/admin/users
+```sh
+php artisan laravelcollective-form-to-raw-html:run resources/views/admin/users
 ```
 
 Or a single file:
 
-```php
-laravelcollective-form-to-raw-html:run resources/views/admin/users/create.blade.php
+```sh
+php artisan laravelcollective-form-to-raw-html:run resources/views/admin/users/create.blade.php
 ```
 
 **NOTE:** The target path is always relative to the project root.
@@ -104,6 +104,22 @@ The HTML result will be:
 
 ```html
 &lt;strong&gt;Name &amp; firstname&lt;/strong&gt;
+```
+
+### Escaped with double-encode
+
+If you do not want to use this feature you can pass the `--escape-with-double-encode` option to the command.
+
+So instead of escaping this way:
+
+```blade
+{!! e($value, false) !!}
+```
+
+The values ​​will be escaped like this:
+
+```blade
+{{ $value }}
 ```
 
 ## Automatically retrieve field value

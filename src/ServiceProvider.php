@@ -19,7 +19,7 @@ class ServiceProvider extends BaseServiceProvider
         });
 
         $this->commands([
-            'command.laravelcollective-form-to-raw-html.run'
+            'command.laravelcollective-form-to-raw-html.run',
         ]);
     }
 

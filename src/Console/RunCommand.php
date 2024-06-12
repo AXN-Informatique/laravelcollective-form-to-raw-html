@@ -9,7 +9,8 @@ use Symfony\Component\Finder\Finder;
 class RunCommand extends Command
 {
     protected $signature = 'laravelcollective-form-to-raw-html:run
-        {target=resources/views : Target path to scan (directory or single file relative to the project root)}';
+        {target=resources/views : Target path to scan (directory or single file relative to the project root)}
+        {--escape-with-double-encode}';
 
     protected $description = 'Replaces LaravelCollective `Form::` syntax by raw HTML';
 
@@ -22,7 +23,7 @@ class RunCommand extends Command
         if (is_file($path)) {
             $finder = Finder::create()
                 ->files()
-                ->in(dirname($path))
+                ->in(\dirname($path))
                 ->depth(0)
                 ->name(basename($path));
 
@@ -42,6 +43,8 @@ class RunCommand extends Command
         }
 
         $files = iterator_to_array($finder, false);
+
+        Converter::$escapeWithDoubleEncode = $this->option('escape-with-double-encode');
 
         $nbReplacements = Converter::execute($files);
 

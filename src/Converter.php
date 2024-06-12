@@ -10,13 +10,14 @@ class Converter
 
     public const CHECK_OPTIONS_TAG = '@TODO CHECK OPTIONS';
 
+    public static bool $escapeWithDoubleEncode = false;
+
     protected static string $indent = '';
 
     protected static bool $hasComments = false;
 
     /**
-     * @param array<SplFileInfo> $files
-     * @return int
+     * @param  array<SplFileInfo>  $files
      */
     public static function execute(array $files): int
     {
@@ -48,7 +49,7 @@ class Converter
                     } elseif ($formBuilderMethod === 'close') {
                         $result = static::buildFormClose();
 
-                    } elseif (in_array($formBuilderMethod, ['label', 'labelRequired'])) {
+                    } elseif (\in_array($formBuilderMethod, ['label', 'labelRequired'])) {
                         $result = static::buildLabel(
                             $formBuilderArgs[0],
                             $formBuilderArgs[1] ?? '',
@@ -57,7 +58,7 @@ class Converter
                             $formBuilderMethod === 'labelRequired'
                         );
 
-                    } elseif (in_array($formBuilderMethod, ['input', 'text', 'number', 'date', 'time', 'datetime', 'week', 'month', 'range', 'search', 'email', 'tel', 'url', 'color', 'hidden'])) {
+                    } elseif (\in_array($formBuilderMethod, ['input', 'text', 'number', 'date', 'time', 'datetime', 'week', 'month', 'range', 'search', 'email', 'tel', 'url', 'color', 'hidden'])) {
                         if ($formBuilderMethod === 'input') {
                             $formBuilderMethod = trim(array_shift($formBuilderArgs), '\'"');
                         }
@@ -70,7 +71,7 @@ class Converter
                             $formBuilderArgs[2] ?? ''
                         );
 
-                    } elseif (in_array($formBuilderMethod, ['checkbox', 'radio'])) {
+                    } elseif (\in_array($formBuilderMethod, ['checkbox', 'radio'])) {
                         $result = static::buildDefaultInput(
                             $formBuilderMethod,
                             $formBuilderArgs[0],
@@ -79,7 +80,7 @@ class Converter
                             $formBuilderArgs[3] ?? ''
                         );
 
-                    } elseif (in_array($formBuilderMethod, ['file', 'password'])) {
+                    } elseif (\in_array($formBuilderMethod, ['file', 'password'])) {
                         $result = static::buildNoValueInput(
                             $formBuilderMethod,
                             $formBuilderArgs[0],
@@ -107,7 +108,7 @@ class Converter
                             $formBuilderArgs[3] ?? ''
                         );
 
-                    } elseif (in_array($formBuilderMethod, ['button', 'submit'])) {
+                    } elseif (\in_array($formBuilderMethod, ['button', 'submit'])) {
                         $result = static::buildButton(
                             $formBuilderMethod,
                             $formBuilderArgs[0],
@@ -147,7 +148,7 @@ class Converter
             $method = $extractedOptions['method'];
         }
 
-        if (in_array($method, ['PUT', 'PATCH', 'DELETE'])) {
+        if (\in_array($method, ['PUT', 'PATCH', 'DELETE'])) {
             $attributes['method'] = 'POST';
         } else {
             $attributes['method'] = $method;
@@ -164,10 +165,10 @@ class Converter
 
             $attributes['action'] = 'route('.$route;
 
-            if (count($routeArgs) === 1) {
+            if (\count($routeArgs) === 1) {
                 $attributes['action'] .= ', '.$routeArgs[0];
 
-            } elseif (count($routeArgs) > 1) {
+            } elseif (\count($routeArgs) > 1) {
                 $attributes['action'] .= ', ['.implode(', ', $routeArgs).']';
             }
 
@@ -177,7 +178,7 @@ class Converter
         }
 
         if (isset($extractedOptions['files'])) {
-            if (in_array(strtolower($extractedOptions['files']), ['true', '1'])) {
+            if (\in_array(strtolower($extractedOptions['files']), ['true', '1'])) {
                 $attributes['enctype'] = "'multipart/form-data'";
 
             } elseif (! static::isEmpty($extractedOptions['files'])) {
@@ -191,7 +192,7 @@ class Converter
 
         $input = static::$indent.'<form'.static::buildHtmlTagAttributes($attributes).'>';
 
-        if (! in_array($method, ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])) {
+        if (! \in_array($method, ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])) {
             $input .= "\n".static::$indent.'    @if (strtoupper('.$method.') !== \'GET\')';
             $input .= "\n".static::$indent.'        @csrf';
             $input .= "\n".static::$indent.'        @if (strtoupper('.$method.') !== \'POST\')';
@@ -252,7 +253,7 @@ class Converter
         if (! static::isEmpty($name)) {
             $attributes['name'] = $name;
 
-            if (in_array($type, ['checkbox', 'radio'])) {
+            if (\in_array($type, ['checkbox', 'radio'])) {
                 if (! static::useOldHelper($checked) && ! static::isEmpty($value)) {
                     $checked = (! static::isEmpty($checked) ? '! old() ? '.$checked.' : ' : '')
                         .'in_array('.$value.', (array) '.static::withOldHelperIfNeeded($name).')';
@@ -385,19 +386,20 @@ class Converter
         $stringBefore = '';
         $stringAfter = '';
 
-        if (count($attributes) > 1) {
+        if (\count($attributes) > 1) {
             $stringBefore = '    ';
             $stringAfter = "\n".static::$indent;
 
             $builtAttributes .= $stringAfter;
 
-        } elseif (count($attributes) === 1) {
+        } elseif (\count($attributes) === 1) {
             $builtAttributes .= ' ';
         }
 
         foreach ($attributes as $attrName => $attrValue) {
             if ($attrName === static::CHECK_OPTIONS_TAG) {
                 $builtAttributes .= $stringBefore.'{{-- '.$attrName.': '.$attrValue.' --}}'.$stringAfter;
+
                 continue;
             }
 
@@ -405,12 +407,12 @@ class Converter
                 $attrValue = '';
             }
 
-            if (in_array($attrName, ['disabled', 'readonly', 'required', 'checked', 'multiple'])) {
+            if (\in_array($attrName, ['disabled', 'readonly', 'required', 'checked', 'multiple'])) {
                 if ($attrValue === '') {
                     continue;
                 }
 
-                if (in_array(strtolower($attrValue), ['true', '1', $attrName])) {
+                if (\in_array(strtolower($attrValue), ['true', '1', $attrName])) {
                     $attr = $attrName;
                 } elseif ($attrName === 'multiple') {
                     $attr = '@if ('.$attrValue.') multiple @endif';
@@ -421,7 +423,7 @@ class Converter
             } elseif ($attrName === 'class' && preg_match('/^\s*(\[\s*.*\s*\])\s*$/Us', $attrValue, $matches)) {
                 $attr = $attrName.'="{!! implode(\' \', '.$matches[1].') !!}"';
 
-            } elseif (is_string($attrName)) {
+            } elseif (\is_string($attrName)) {
                 $attr = $attrName.'="'.static::withEscapedEchoIfNeeded($attrValue).'"';
 
             } else {
@@ -441,7 +443,7 @@ class Converter
 
     protected static function isEmpty(string $value): bool
     {
-        return empty($value) || in_array(strtolower($value), ["''", '""', 'false', 'null']);
+        return empty($value) || \in_array(strtolower($value), ["''", '""', 'false', 'null']);
     }
 
     /**
@@ -594,7 +596,6 @@ class Converter
 
             } elseif (strpos($segment, '=>') !== false) {
                 throw new ConverterException();
-
             } else {
                 $array[] = $segment;
             }
