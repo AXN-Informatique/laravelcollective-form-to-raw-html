@@ -477,6 +477,10 @@ class Converter
         }
 
         if ($escape) {
+            if (static::$escapeWithDoubleEncode) {
+                return '{{ '.$value.' }}';
+            }
+
             return '{!! e('.$value.', false) !!}';
         }
 
