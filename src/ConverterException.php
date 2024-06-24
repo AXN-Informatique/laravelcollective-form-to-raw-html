@@ -4,6 +4,4 @@ namespace Axn\LaravelCollectiveFormToRawHtml;
 
 use Exception;
 
-class ConverterException extends Exception
-{
-}
+class ConverterException extends Exception {}

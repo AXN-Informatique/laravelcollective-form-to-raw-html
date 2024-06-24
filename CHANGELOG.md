@@ -1,6 +1,13 @@
 Changelog
 =========
 
+1.1.1 (2024-06-24)
+------------------
+
+- Fixed support of `--escape-with-double-encode` command option
+- Added description for `--escape-with-double-encode` command option
+
+
 1.1.0 (2024-06-12)
 ------------------
 
