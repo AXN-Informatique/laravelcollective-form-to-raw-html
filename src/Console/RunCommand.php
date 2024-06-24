@@ -10,7 +10,7 @@ class RunCommand extends Command
 {
     protected $signature = 'laravelcollective-form-to-raw-html:run
         {target=resources/views : Target path to scan (directory or single file relative to the project root)}
-        {--escape-with-double-encode}';
+        {--escape-with-double-encode : Use regular Blade echo syntax instead of the one without double-encode (see README for more info)}';
 
     protected $description = 'Replaces LaravelCollective `Form::` syntax by raw HTML';
 
