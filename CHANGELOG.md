@@ -1,10 +1,10 @@
 Changelog
 =========
 
-UNRELEASED
+1.1.2 (2024-06-27)
 ------------------
 
-- Fix unexpected behavior with comments
+- Fix: unexpected behavior with comments
 - Fix: 0 was considered as empty value
 
 
