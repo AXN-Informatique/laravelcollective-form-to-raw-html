@@ -645,6 +645,19 @@ class Converter
                 $previousChar = $chars[$i - 1] ?? '';
                 $nextChar = $chars[$i + 1] ?? '';
 
+                if ($inSinglelineComment || $inMultilineComment) {
+                    static::$hasComments = true;
+
+                    if ($inSinglelineComment && $char === "\n") {
+                        $inSinglelineComment = false;
+
+                    } elseif ($inMultilineComment && $previousChar === '*' && $char === '/') {
+                        $inMultilineComment = false;
+                    }
+
+                    continue;
+                }
+
                 if (! $inDoubleQuotedString && $char === "'" && $previousChar !== '\\') {
                     $inSimpleQuotedString = ! $inSimpleQuotedString;
 
@@ -665,11 +678,13 @@ class Converter
                     } elseif ($char === ']') {
                         $nbUnclosedBrackets--;
 
-                    } elseif (! $inMultilineComment && ($char === '#' || $char === '/' && $nextChar === '/')) {
+                    } elseif ($char === '#' || $char === '/' && $nextChar === '/') {
                         $inSinglelineComment = true;
+                        continue;
 
-                    } elseif (! $inSinglelineComment && $char === '/' && $nextChar === '*') {
+                    } elseif ($char === '/' && $nextChar === '*') {
                         $inMultilineComment = true;
+                        continue;
                     }
                 }
 
@@ -677,18 +692,7 @@ class Converter
                     throw new ConverterException();
                 }
 
-                if (! $inSinglelineComment && ! $inMultilineComment) {
-                    $args[$argIndex] .= $char;
-                } else {
-                    static::$hasComments = true;
-
-                    if ($inSinglelineComment && $char === "\n") {
-                        $inSinglelineComment = false;
-
-                    } elseif ($inMultilineComment && $previousChar === '*' && $char === '/') {
-                        $inMultilineComment = false;
-                    }
-                }
+                $args[$argIndex] .= $char;
             }
 
             if (! $inSinglelineComment && ! $inMultilineComment

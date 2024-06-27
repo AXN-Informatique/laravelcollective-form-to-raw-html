@@ -1,6 +1,12 @@
 Changelog
 =========
 
+UNRELEASED
+------------------
+
+- Fix unexpected behavior with comments
+
+
 1.1.1 (2024-06-24)
 ------------------
 
