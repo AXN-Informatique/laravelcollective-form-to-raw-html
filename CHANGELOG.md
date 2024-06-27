@@ -5,6 +5,7 @@ UNRELEASED
 ------------------
 
 - Fix unexpected behavior with comments
+- Fix: 0 was considered as empty value
 
 
 1.1.1 (2024-06-24)

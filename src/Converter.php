@@ -443,7 +443,7 @@ class Converter
 
     protected static function isEmpty(string $value): bool
     {
-        return empty($value) || \in_array(strtolower($value), ["''", '""', 'false', 'null']);
+        return \in_array(strtolower($value), ['', "''", '""', 'false', 'null']);
     }
 
     /**
