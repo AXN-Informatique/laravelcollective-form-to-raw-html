@@ -46,6 +46,11 @@ class Converter
                             $formBuilderArgs[0] ?? ''
                         );
 
+                    } elseif ($formBuilderMethod === 'model') {
+                        $result = static::buildFormOpenFromModel(
+                            $formBuilderArgs[1] ?? ''
+                        );
+
                     } elseif ($formBuilderMethod === 'close') {
                         $result = static::buildFormClose();
 
@@ -164,6 +169,82 @@ class Converter
             $route = array_shift($routeArgs);
 
             $attributes['action'] = 'route('.$route;
+
+            if (\count($routeArgs) === 1) {
+                $attributes['action'] .= ', '.$routeArgs[0];
+
+            } elseif (\count($routeArgs) > 1) {
+                $attributes['action'] .= ', ['.implode(', ', $routeArgs).']';
+            }
+
+            $attributes['action'] .= ')';
+
+            unset($extractedOptions['route']);
+        }
+
+        if (isset($extractedOptions['files'])) {
+            if (\in_array(strtolower($extractedOptions['files']), ['true', '1'])) {
+                $attributes['enctype'] = "'multipart/form-data'";
+
+            } elseif (! static::isEmpty($extractedOptions['files'])) {
+                $attributes[] = $extractedOptions['files'].' ? \'enctype="multipart/form-data"\' : \'\'';
+            }
+
+            unset($extractedOptions['files']);
+        }
+
+        $attributes += $extractedOptions;
+
+        $input = static::$indent.'<form'.static::buildHtmlTagAttributes($attributes).'>';
+
+        if (! \in_array($method, ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])) {
+            $input .= "\n".static::$indent.'    @if (strtoupper('.$method.') !== \'GET\')';
+            $input .= "\n".static::$indent.'        @csrf';
+            $input .= "\n".static::$indent.'        @if (strtoupper('.$method.') !== \'POST\')';
+            $input .= "\n".static::$indent.'            @method ('.$method.')';
+            $input .= "\n".static::$indent.'        @endif';
+            $input .= "\n".static::$indent.'    @endif';
+
+        } elseif ($method !== 'GET') {
+            $input .= "\n".static::$indent.'    @csrf';
+
+            if ($method !== 'POST') {
+                $input .= "\n".static::$indent.'    @method (\''.$method.'\')';
+            }
+        }
+
+        return $input;
+    }
+
+    protected static function buildFormOpenFromModel(string $options): string
+    {
+        $extractedOptions = static::extractArrayFromStringWithCheckOptionsTagIfFailed($options);
+        $attributes = [];
+
+        if (! isset($extractedOptions['method'])) {
+            $method = 'POST';
+        } elseif (preg_match('/^\s*(\'|")(\w+)(\'|")\s*$/Us', $extractedOptions['method'], $matches)) {
+            $method = strtoupper($matches[2]);
+        } else {
+            $method = $extractedOptions['method'];
+        }
+
+        if (\in_array($method, ['PUT', 'PATCH', 'DELETE'])) {
+            $attributes['method'] = 'POST';
+        } else {
+            $attributes['method'] = $method;
+        }
+
+        if (isset($extractedOptions['url'])) {
+            $attributes['action'] = $extractedOptions['url'];
+
+            unset($extractedOptions['url']);
+
+        } elseif (isset($extractedOptions['action'])) {
+            $routeArgs = static::extractArgsFromString(trim($extractedOptions['action'], " \n\r\t\v\0[]"));
+            $route = array_shift($routeArgs);
+
+            $attributes['action'] = 'action('.$route;
 
             if (\count($routeArgs) === 1) {
                 $attributes['action'] .= ', '.$routeArgs[0];
