@@ -82,15 +82,13 @@ Warnings and limitations
 
 ## Escaped echo without double-encode
 
-LaravelCollective internally use most of the time escaped echo without double-encode:
+LaravelCollective internally used most of the time escaped echo without double-encode:
 
 ```php
 e($value, false)
 ```
 
 This prevents the encoded HTML entities from being encoded a second time (`&amp;` => `&amp;amp;`)
-
-So, you will see the use of this function in the replacement to keep the original behavior.
 
 For example:
 
@@ -106,20 +104,20 @@ The HTML result will be:
 &lt;strong&gt;Name &amp; firstname&lt;/strong&gt;
 ```
 
-### Escaped with double-encode
+For simplicity and clarity purpose, this package use regular Blade echo syntax instead of escaped echo without double-encode.
 
-If you do not want to use this feature you can pass the `--escape-with-double-encode` option to the command.
+If you want to keep the original behavior of LaravelCollective, use `--escape-without-double-encode` option to the command.
 
 So instead of escaping this way:
 
 ```blade
-{!! e($value, false) !!}
+{{ $value }}
 ```
 
 The values ​​will be escaped like this:
 
 ```blade
-{{ $value }}
+{!! e($value, false) !!}
 ```
 
 ## Automatically retrieve field value
