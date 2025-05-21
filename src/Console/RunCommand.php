@@ -10,7 +10,7 @@ class RunCommand extends Command
 {
     protected $signature = 'laravelcollective-form-to-raw-html:run
         {target=resources/views : Target path to scan (directory or single file relative to the project root)}
-        {--escape-with-double-encode : Use regular Blade echo syntax instead of the one without double-encode (see README for more info)}';
+        {--escape-without-double-encode : Use without double-encode instead of regular Blade echo syntax (see README for more info)}';
 
     protected $description = 'Replaces LaravelCollective `Form::` syntax by raw HTML';
 
@@ -44,7 +44,7 @@ class RunCommand extends Command
 
         $files = iterator_to_array($finder, false);
 
-        Converter::$escapeWithDoubleEncode = $this->option('escape-with-double-encode');
+        Converter::$escapeWithoutDoubleEncode = $this->option('escape-without-double-encode');
 
         $nbReplacements = Converter::execute($files);
 

@@ -10,7 +10,7 @@ class Converter
 
     public const CHECK_OPTIONS_TAG = '@TODO CHECK OPTIONS';
 
-    public static bool $escapeWithDoubleEncode = false;
+    public static bool $escapeWithoutDoubleEncode = false;
 
     protected static string $indent = '';
 
@@ -477,11 +477,11 @@ class Converter
         }
 
         if ($escape) {
-            if (static::$escapeWithDoubleEncode) {
-                return '{{ '.$value.' }}';
+            if (static::$escapeWithoutDoubleEncode) {
+                return '{!! e('.$value.', false) !!}';
             }
 
-            return '{!! e('.$value.', false) !!}';
+            return '{{ '.$value.' }}';
         }
 
         return '{!! '.$value.' !!}';
