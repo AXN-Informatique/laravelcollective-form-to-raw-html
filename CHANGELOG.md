@@ -1,6 +1,15 @@
 Changelog
 =========
 
+2.0.0 (2025-05-21)
+------------------
+
+- Added support for Laravel 12
+- Reverse behavior of "Escaped echo without double-encode":
+    - removed `--escape-with-double-encode` command option
+    - added `--escape-without-double-encode` command option
+
+
 1.1.2 (2024-06-27)
 ------------------
 
