@@ -141,7 +141,7 @@ Will be replaced by:
     type="text"
     name="name"
     id="name"
-    value="{!! e(old('name'), false) !!}"
+    value="{{ old('name') }}"
 >
 ```
 
@@ -160,7 +160,7 @@ Will be replaced by:
 <input
     type="text"
     name="name[0]"
-    value="{!! e(old('name.0'), false) !!}"
+    value="{{ old('name.0') }}"
 >
 ```
 
@@ -174,7 +174,7 @@ integrate the replacement function into the output result like this:
 <input
     type="text"
     name="name[0]"
-    value="{!! e(old(str_replace(['.', '[]', '[', ']'], ['_', '', '.', ''], 'name['.$index.']')), false) !!}"
+    value="{{ old(str_replace(['.', '[]', '[', ']'], ['_', '', '.', ''], 'name['.$index.']')) }}"
 >
 ```
 
@@ -200,7 +200,7 @@ Will be replaced by:
     type="checkbox"
     name="name[]"
     value="1"
-    @checked (in_array('1', (array) old('name')))
+    @checked(in_array('1', (array) old('name')))
 >
 ```
 
@@ -217,7 +217,7 @@ It will appear like this:
     type="checkbox"
     name="name[]"
     value="1"
-    @checked (! old() ? true : in_array('1', (array) old('name')))
+    @checked(! old() ? true : in_array('1', (array) old('name')))
 >
 ```
 
@@ -257,7 +257,7 @@ Will be replaced by:
     type="text"
     name="name"
     id="name"
-    value="{!! e(old('name'), false) !!}"
+    value="{{ old('name') }}"
 >
 ```
 
@@ -285,7 +285,7 @@ Will be replaced by:
     type="text"
     name="name"
     id="name"
-    value="{!! e(old('name'), false) !!}"
+    value="{{ old('name') }}"
     {{-- @TODO CHECK OPTIONS: array_merge($defaultOptions, [
         'size' => 50,
         'required',
