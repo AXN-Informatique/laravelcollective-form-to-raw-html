@@ -201,7 +201,7 @@ class Converter
             $input .= "\n".static::$indent.'    @if (strtoupper('.$method.') !== \'GET\')';
             $input .= "\n".static::$indent.'        @csrf';
             $input .= "\n".static::$indent.'        @if (strtoupper('.$method.') !== \'POST\')';
-            $input .= "\n".static::$indent.'            @method ('.$method.')';
+            $input .= "\n".static::$indent.'            @method('.$method.')';
             $input .= "\n".static::$indent.'        @endif';
             $input .= "\n".static::$indent.'    @endif';
 
@@ -209,7 +209,7 @@ class Converter
             $input .= "\n".static::$indent.'    @csrf';
 
             if ($method !== 'POST') {
-                $input .= "\n".static::$indent.'    @method (\''.$method.'\')';
+                $input .= "\n".static::$indent.'    @method(\''.$method.'\')';
             }
         }
 
@@ -367,7 +367,7 @@ class Converter
         $input .= static::$indent.'    @foreach ('.$list.' as $optionValue => $optionText)'."\n";
         $input .= static::$indent.'        <option '."\n";
         $input .= static::$indent.'            value="'.static::escapedEcho('$optionValue').'" '."\n";
-        $input .= static::$indent.'            @selected (in_array($optionValue, (array) ('.static::withOldHelperIfNeeded($name, $selectedValue).')))'."\n";
+        $input .= static::$indent.'            @selected(in_array($optionValue, (array) ('.static::withOldHelperIfNeeded($name, $selectedValue).')))'."\n";
         $input .= static::$indent.'        >'.static::escapedEcho('$optionText').'</option>'."\n";
         $input .= static::$indent.'    @endforeach'."\n";
         $input .= static::$indent.'</select>';
@@ -432,7 +432,7 @@ class Converter
                 } elseif ($attrName === 'multiple') {
                     $attr = '@if ('.$attrValue.') multiple @endif';
                 } else {
-                    $attr = '@'.$attrName.' ('.$attrValue.')';
+                    $attr = '@'.$attrName.'('.$attrValue.')';
                 }
 
             } elseif ($attrName === 'class' && preg_match('/^\s*(\[\s*.*\s*\])\s*$/Us', $attrValue, $matches)) {
