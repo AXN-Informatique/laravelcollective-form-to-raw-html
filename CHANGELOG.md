@@ -1,6 +1,12 @@
 Changelog
 =========
 
+2.1.0 (2025-05-23)
+------------------
+
+- Added replacement of `Form::hiddenForm` macro
+
+
 2.0.0 (2025-05-21)
 ------------------
 

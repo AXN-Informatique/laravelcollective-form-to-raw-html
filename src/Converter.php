@@ -49,6 +49,11 @@ class Converter
                     } elseif ($formBuilderMethod === 'close') {
                         $result = static::buildFormClose();
 
+                    } elseif ($formBuilderMethod === 'hiddenForm') {
+                        $result = static::buildHiddenForm(
+                            $formBuilderArgs[0] ?? ''
+                        );
+
                     } elseif (\in_array($formBuilderMethod, ['label', 'labelRequired'])) {
                         $result = static::buildLabel(
                             $formBuilderArgs[0],
@@ -214,6 +219,16 @@ class Converter
     protected static function buildFormClose(): string
     {
         return static::$indent.'</form>';
+    }
+
+    protected static function buildHiddenForm(string $options): string
+    {
+        $input = static::$indent.'@push(\'extra-html\')'."\n";
+        $input .= static::buildFormOpen($options)."\n";
+        $input .= static::buildFormClose()."\n";
+        $input .= static::$indent.'@endpush';
+
+        return $input;
     }
 
     protected static function buildLabel(string $for, string $value, string $options, string $escape, bool $required): string

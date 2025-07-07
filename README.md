@@ -49,7 +49,8 @@ The supported methods are:
 * open(options)
 * close()
 * label(name, value, options, escape)
-* labelRequired(name, value, options, escape)
+* labelRequired(name, value, options, escape) **(AXN-Informatique macro)**
+* hiddenForm(options) **(AXN-Informatique macro)**
 * input(type, name, value, options)
 * text(name, value, options)
 * number(name, value, options)
