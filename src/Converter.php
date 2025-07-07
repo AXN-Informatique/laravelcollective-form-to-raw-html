@@ -366,9 +366,9 @@ class Converter
         $input .= $placeholderOption;
         $input .= static::$indent.'    @foreach ('.$list.' as $optionValue => $optionText)'."\n";
         $input .= static::$indent.'        <option '."\n";
-        $input .= static::$indent.'            value="{!! e($optionValue, false) !!}" '."\n";
+        $input .= static::$indent.'            value="'.static::escapedEcho('$optionValue').'" '."\n";
         $input .= static::$indent.'            @selected (in_array($optionValue, (array) ('.static::withOldHelperIfNeeded($name, $selectedValue).')))'."\n";
-        $input .= static::$indent.'        >{!! e($optionText, false) !!}</option>'."\n";
+        $input .= static::$indent.'        >'.static::escapedEcho('$optionText').'</option>'."\n";
         $input .= static::$indent.'    @endforeach'."\n";
         $input .= static::$indent.'</select>';
 
@@ -461,6 +461,15 @@ class Converter
         return \in_array(strtolower($value), ['', "''", '""', 'false', 'null']);
     }
 
+    protected static function escapedEcho(string $value): string
+    {
+        if (static::$escapeWithoutDoubleEncode) {
+            return '{!! e('.$value.', false) !!}';
+        }
+
+        return '{{ '.$value.' }}';
+    }
+
     /**
      * Examples:
      *
@@ -492,11 +501,7 @@ class Converter
         }
 
         if ($escape) {
-            if (static::$escapeWithoutDoubleEncode) {
-                return '{!! e('.$value.', false) !!}';
-            }
-
-            return '{{ '.$value.' }}';
+            return static::escapedEcho($value);
         }
 
         return '{!! '.$value.' !!}';
